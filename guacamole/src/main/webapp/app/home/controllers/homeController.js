@@ -20,113 +20,137 @@
 /**
  * The controller for the home page.
  */
-angular.module('home').controller('homeController', ['$scope', '$injector', 
-        function homeController($scope, $injector) {
+angular.module('home').controller('homeController', ['$scope', '$injector',
+    function homeController($scope, $injector) {
 
-    // Get required types
-    var ConnectionGroup  = $injector.get('ConnectionGroup');
-    var ClientIdentifier = $injector.get('ClientIdentifier');
-    var GroupListItem    = $injector.get('GroupListItem');
-            
-    // Get required services
-    var authenticationService  = $injector.get('authenticationService');
-    var connectionGroupService = $injector.get('connectionGroupService');
-    var dataSourceService      = $injector.get('dataSourceService');
-    var requestService         = $injector.get('requestService');
+        // Get required types
+        var ConnectionGroup = $injector.get('ConnectionGroup');
+        var ClientIdentifier = $injector.get('ClientIdentifier');
+        var GroupListItem = $injector.get('GroupListItem');
 
-    /**
-     * Map of data source identifier to the root connection group of that data
-     * source, or null if the connection group hierarchy has not yet been
-     * loaded.
-     *
-     * @type Object.<String, ConnectionGroup>
-     */
-    $scope.rootConnectionGroups = null;
-
-    /**
-     * Array of all connection properties that are filterable.
-     *
-     * @type String[]
-     */
-    $scope.filteredConnectionProperties = [
-        'name'
-    ];
-
-    /**
-     * Array of all connection group properties that are filterable.
-     *
-     * @type String[]
-     */
-    $scope.filteredConnectionGroupProperties = [
-        'name'
-    ];
-
-    /**
-     * Returns whether critical data has completed being loaded.
-     *
-     * @returns {Boolean}
-     *     true if enough data has been loaded for the user interface to be
-     *     useful, false otherwise.
-     */
-    $scope.isLoaded = function isLoaded() {
-
-        return $scope.rootConnectionGroups !== null;
-
-    };
-
-    /**
-     * Object passed to the guacGroupList directive, providing context-specific
-     * functions or data.
-     */
-    $scope.context = {
+        // Get required services
+        var authenticationService = $injector.get('authenticationService');
+        var connectionGroupService = $injector.get('connectionGroupService');
+        var dataSourceService = $injector.get('dataSourceService');
+        var requestService = $injector.get('requestService');
 
         /**
-         * Returns the unique string identifier which must be used when
-         * connecting to a connection or connection group represented by the
-         * given GroupListItem.
+         * Map of data source identifier to the root connection group of that data
+         * source, or null if the connection group hierarchy has not yet been
+         * loaded.
          *
-         * @param {GroupListItem} item
-         *     The GroupListItem to determine the client identifier of.
-         *
-         * @returns {String}
-         *     The client identifier associated with the connection or
-         *     connection group represented by the given GroupListItem, or null
-         *     if the GroupListItem cannot have an associated client
-         *     identifier.
+         * @type Object.<String, ConnectionGroup>
          */
-        getClientIdentifier : function getClientIdentifier(item) {
+        $scope.rootConnectionGroups = null;
 
-            // If the item is a connection, generate a connection identifier
-            if (item.type === GroupListItem.Type.CONNECTION)
-                return ClientIdentifier.toString({
-                    dataSource : item.dataSource,
-                    type       : ClientIdentifier.Types.CONNECTION,
-                    id         : item.identifier
-                });
+        /**
+         * Array of all connection properties that are filterable.
+         *
+         * @type String[]
+         */
+        $scope.filteredConnectionProperties = [
+            'name'
+        ];
 
-            // If the item is a connection group, generate a connection group identifier
-            if (item.type === GroupListItem.Type.CONNECTION_GROUP)
-                return ClientIdentifier.toString({
-                    dataSource : item.dataSource,
-                    type       : ClientIdentifier.Types.CONNECTION_GROUP,
-                    id         : item.identifier
-                });
+        /**
+         * Array of all connection group properties that are filterable.
+         *
+         * @type String[]
+         */
+        $scope.filteredConnectionGroupProperties = [
+            'name'
+        ];
 
-            // Otherwise, no such identifier can exist
-            return null;
+        /**
+         * Returns whether critical data has completed being loaded.
+         *
+         * @returns {Boolean}
+         *     true if enough data has been loaded for the user interface to be
+         *     useful, false otherwise.
+         */
+        $scope.isLoaded = function isLoaded() {
 
+            return $scope.rootConnectionGroups !== null;
+
+        };
+
+        /**
+         * Object passed to the guacGroupList directive, providing context-specific
+         * functions or data.
+         */
+        $scope.context = {
+
+            /**
+             * Returns the unique string identifier which must be used when
+             * connecting to a connection or connection group represented by the
+             * given GroupListItem.
+             *
+             * @param {GroupListItem} item
+             *     The GroupListItem to determine the client identifier of.
+             *
+             * @returns {String}
+             *     The client identifier associated with the connection or
+             *     connection group represented by the given GroupListItem, or null
+             *     if the GroupListItem cannot have an associated client
+             *     identifier.
+             */
+            getClientIdentifier: function getClientIdentifier(item) {
+
+                // If the item is a connection, generate a connection identifier
+                if (item.type === GroupListItem.Type.CONNECTION)
+                    return ClientIdentifier.toString({
+                        dataSource: item.dataSource,
+                        type: ClientIdentifier.Types.CONNECTION,
+                        id: item.identifier
+                    });
+
+                // If the item is a connection group, generate a connection group identifier
+                if (item.type === GroupListItem.Type.CONNECTION_GROUP)
+                    return ClientIdentifier.toString({
+                        dataSource: item.dataSource,
+                        type: ClientIdentifier.Types.CONNECTION_GROUP,
+                        id: item.identifier
+                    });
+
+                // Otherwise, no such identifier can exist
+                return null;
+
+            }
+
+        };
+
+        // Retrieve root groups and all descendants
+        dataSourceService.apply(
+            connectionGroupService.getConnectionGroupTree,
+            authenticationService.getAvailableDataSources(),
+            ConnectionGroup.ROOT_IDENTIFIER
+        )
+            .then(function rootGroupsRetrieved(rootConnectionGroups) {
+                $scope.rootConnectionGroups = rootConnectionGroups;
+            }, requestService.DIE);
+
+        // All added for Agora, which seems weird.
+        $scope.loadProgram = function loadProgram(URL) {
+            var thisProgName = sessionStorage.getItem("thisProgName");
+            var thisPid = sessionStorage.getItem("thisPid");
+            var buttonToClick = $(".name.ng-binding:contains('" + thisPid + "')")[0];
+
+            if (buttonToClick) {
+                // Clear state to avoid opening the same thing forever
+                sessionStorage.setItem('thisProgName', null);
+                sessionStorage.setItem('thisPid', null);
+                sessionStorage.setItem('previousPid', thisPid);
+
+                buttonToClick.click();
+            }
         }
-
-    };
-
-    // Retrieve root groups and all descendants
-    dataSourceService.apply(
-        connectionGroupService.getConnectionGroupTree,
-        authenticationService.getAvailableDataSources(),
-        ConnectionGroup.ROOT_IDENTIFIER
-    )
-    .then(function rootGroupsRetrieved(rootConnectionGroups) {
-        $scope.rootConnectionGroups = rootConnectionGroups;
-    }, requestService.DIE);
-
-}]);
+        // Agora - trying to add a logout function
+        $scope.reload = function reload() {
+            // Delay a wee bit so that the reload will grab the new configs:q
+            setTimeout(function () {
+                authenticationService.logout()['finally'](function logoutComplete() {
+                    $route.reload();
+                });
+            }, 1500);
+        };
+    }]);

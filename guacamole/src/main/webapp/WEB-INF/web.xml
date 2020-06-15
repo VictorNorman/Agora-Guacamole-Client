@@ -17,10 +17,7 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<web-app version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
                              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
     <!-- Basic config -->
@@ -52,4 +49,24 @@
         <mime-type>audio/ogg</mime-type>
     </mime-mapping>
 
+    <!-- Agora servlets -->
+    <servlet>
+        <servlet-name>AgoraServlet</servlet-name>
+        <servlet-class>agora.AgoraServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AgoraServlet</servlet-name>
+        <url-pattern>/AgoraServlet/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>KillServlet</servlet-name>
+        <servlet-class>agora.KillServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>KillServlet</servlet-name>
+        <url-pattern>/KillServlet/*</url-pattern>
+    </servlet-mapping>
 </web-app>

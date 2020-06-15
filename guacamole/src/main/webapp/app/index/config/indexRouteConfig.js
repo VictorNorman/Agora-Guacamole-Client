@@ -20,177 +20,228 @@
 /**
  * The config block for setting up all the url routing.
  */
-angular.module('index').config(['$routeProvider', '$locationProvider', 
-        function indexRouteConfig($routeProvider, $locationProvider) {
+angular.module('index').config(['$routeProvider', '$locationProvider',
+    function indexRouteConfig($routeProvider, $locationProvider) {
 
-    // Disable HTML5 mode (use # for routing)
-    $locationProvider.html5Mode(false);
+        // Disable HTML5 mode (use # for routing)
+        $locationProvider.html5Mode(false);
 
-    // Clear hash prefix to keep /#/thing/bat URL style
-    $locationProvider.hashPrefix('');
+        // Clear hash prefix to keep /#/thing/bat URL style
+        $locationProvider.hashPrefix('');
 
-    /**
-     * Attempts to re-authenticate with the Guacamole server, sending any
-     * query parameters in the URL, along with the current auth token, and
-     * updating locally stored token if necessary.
-     *
-     * @param {Service} $injector
-     *     The Angular $injector service.
-     * 
-     * @returns {Promise}
-     *     A promise which resolves successfully only after an attempt to
-     *     re-authenticate has been made. If the authentication attempt fails,
-     *     the promise will be rejected.
-     */
-    var updateCurrentToken = ['$injector', function updateCurrentToken($injector) {
+        /**
+         * Attempts to re-authenticate with the Guacamole server, sending any
+         * query parameters in the URL, along with the current auth token, and
+         * updating locally stored token if necessary.
+         *
+         * @param {Service} $injector
+         *     The Angular $injector service.
+         * 
+         * @returns {Promise}
+         *     A promise which resolves successfully only after an attempt to
+         *     re-authenticate has been made. If the authentication attempt fails,
+         *     the promise will be rejected.
+         */
+        var updateCurrentToken = ['$injector', function updateCurrentToken($injector) {
 
-        // Required services
-        var $location             = $injector.get('$location');
-        var authenticationService = $injector.get('authenticationService');
+            // Required services
+            var $location = $injector.get('$location');
+            var authenticationService = $injector.get('authenticationService');
 
-        // Re-authenticate including any parameters in URL
-        return authenticationService.updateCurrentToken($location.search());
+            // Re-authenticate including any parameters in URL
+            return authenticationService.updateCurrentToken($location.search());
 
-    }];
+        }];
 
-    /**
-     * Redirects the user to their home page. This necessarily requires
-     * attempting to re-authenticate with the Guacamole server, as the user's
-     * credentials may have changed, and thus their most-appropriate home page
-     * may have changed as well.
-     *
-     * @param {Service} $injector
-     *     The Angular $injector service.
-     * 
-     * @returns {Promise}
-     *     A promise which resolves successfully only after an attempt to
-     *     re-authenticate and determine the user's proper home page has been
-     *     made.
-     */
-    var routeToUserHomePage = ['$injector', function routeToUserHomePage($injector) {
+        /**
+         * Redirects the user to their home page. This necessarily requires
+         * attempting to re-authenticate with the Guacamole server, as the user's
+         * credentials may have changed, and thus their most-appropriate home page
+         * may have changed as well.
+         *
+         * @param {Service} $injector
+         *     The Angular $injector service.
+         * 
+         * @returns {Promise}
+         *     A promise which resolves successfully only after an attempt to
+         *     re-authenticate and determine the user's proper home page has been
+         *     made.
+         */
+        var routeToUserHomePage = ['$injector', function routeToUserHomePage($injector) {
 
-        // Required services
-        var $location       = $injector.get('$location');
-        var $q              = $injector.get('$q');
-        var userPageService = $injector.get('userPageService');
+            // Required services
+            var $location = $injector.get('$location');
+            var $q = $injector.get('$q');
+            var userPageService = $injector.get('userPageService');
 
-        // Promise for routing attempt
-        var route = $q.defer();
+            // Promise for routing attempt
+            var route = $q.defer();
 
-        // Re-authenticate including any parameters in URL
-        $injector.invoke(updateCurrentToken)
-        .then(function tokenUpdateComplete() {
+            // Re-authenticate including any parameters in URL
+            $injector.invoke(updateCurrentToken)
+                .then(function tokenUpdateComplete() {
 
-            // Redirect to home page
-            userPageService.getHomePage()
-            .then(function homePageRetrieved(homePage) {
+                    // Redirect to home page
+                    userPageService.getHomePage()
+                        .then(function homePageRetrieved(homePage) {
 
-                // If home page is the requested location, allow through
-                if ($location.path() === homePage.url)
-                    route.resolve();
+                            // If home page is the requested location, allow through
+                            if ($location.path() === homePage.url)
+                                route.resolve();
 
-                // Otherwise, reject and reroute
-                else {
-                    $location.path(homePage.url);
-                    route.reject();
-                }
+                            // Otherwise, reject and reroute
+                            else {
+                                $location.path(homePage.url);
+                                route.reject();
+                            }
 
-            })
+                        })
 
-            // If retrieval of home page fails, assume requested page is OK
-            ['catch'](function homePageFailed() {
-                route.resolve();
+                    // If retrieval of home page fails, assume requested page is OK
+                    ['catch'](function homePageFailed() {
+                        route.resolve();
+                    });
+
+                })
+
+            ['catch'](function tokenUpdateFailed() {
+                route.reject();
             });
 
-        })
+            // Return promise that will resolve only if the requested page is the
+            // home page
+            return route.promise;
 
-        ['catch'](function tokenUpdateFailed() {
-            route.reject();
-        });
+        }];
 
-        // Return promise that will resolve only if the requested page is the
-        // home page
-        return route.promise;
+        // Configure each possible route
+        $routeProvider
 
-    }];
+            // Home screen
+            .when('/', {
+                title: 'APP.NAME',
+                bodyClassName: 'home',
+                templateUrl: 'app/home/templates/home.html',
+                controller: 'homeController',
+                resolve: { routeToUserHomePage: routeToUserHomePage }
+            })
 
-    // Configure each possible route
-    $routeProvider
+            // Management screen
+            .when('/settings/:dataSource?/:tab', {
+                title: 'APP.NAME',
+                bodyClassName: 'settings',
+                templateUrl: 'app/settings/templates/settings.html',
+                controller: 'settingsController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Home screen
-        .when('/', {
-            title         : 'APP.NAME',
-            bodyClassName : 'home',
-            templateUrl   : 'app/home/templates/home.html',
-            controller    : 'homeController',
-            resolve       : { routeToUserHomePage: routeToUserHomePage }
-        })
+            // Connection editor
+            .when('/manage/:dataSource/connections/:id?', {
+                title: 'APP.NAME',
+                bodyClassName: 'manage',
+                templateUrl: 'app/manage/templates/manageConnection.html',
+                controller: 'manageConnectionController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Management screen
-        .when('/settings/:dataSource?/:tab', {
-            title         : 'APP.NAME',
-            bodyClassName : 'settings',
-            templateUrl   : 'app/settings/templates/settings.html',
-            controller    : 'settingsController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            // Sharing profile editor
+            .when('/manage/:dataSource/sharingProfiles/:id?', {
+                title: 'APP.NAME',
+                bodyClassName: 'manage',
+                templateUrl: 'app/manage/templates/manageSharingProfile.html',
+                controller: 'manageSharingProfileController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Connection editor
-        .when('/manage/:dataSource/connections/:id?', {
-            title         : 'APP.NAME',
-            bodyClassName : 'manage',
-            templateUrl   : 'app/manage/templates/manageConnection.html',
-            controller    : 'manageConnectionController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            // Connection group editor
+            .when('/manage/:dataSource/connectionGroups/:id?', {
+                title: 'APP.NAME',
+                bodyClassName: 'manage',
+                templateUrl: 'app/manage/templates/manageConnectionGroup.html',
+                controller: 'manageConnectionGroupController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Sharing profile editor
-        .when('/manage/:dataSource/sharingProfiles/:id?', {
-            title         : 'APP.NAME',
-            bodyClassName : 'manage',
-            templateUrl   : 'app/manage/templates/manageSharingProfile.html',
-            controller    : 'manageSharingProfileController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            // User editor
+            .when('/manage/:dataSource/users/:id?', {
+                title: 'APP.NAME',
+                bodyClassName: 'manage',
+                templateUrl: 'app/manage/templates/manageUser.html',
+                controller: 'manageUserController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Connection group editor
-        .when('/manage/:dataSource/connectionGroups/:id?', {
-            title         : 'APP.NAME',
-            bodyClassName : 'manage',
-            templateUrl   : 'app/manage/templates/manageConnectionGroup.html',
-            controller    : 'manageConnectionGroupController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            // User group editor
+            .when('/manage/:dataSource/userGroups/:id?', {
+                title: 'APP.NAME',
+                bodyClassName: 'manage',
+                templateUrl: 'app/manage/templates/manageUserGroup.html',
+                controller: 'manageUserGroupController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // User editor
-        .when('/manage/:dataSource/users/:id?', {
-            title         : 'APP.NAME',
-            bodyClassName : 'manage',
-            templateUrl   : 'app/manage/templates/manageUser.html',
-            controller    : 'manageUserController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            // Client view
+            .when('/client/:id/:params?', {
+                bodyClassName: 'client',
+                templateUrl: 'app/client/templates/client.html',
+                controller: 'clientController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // User group editor
-        .when('/manage/:dataSource/userGroups/:id?', {
-            title         : 'APP.NAME',
-            bodyClassName : 'manage',
-            templateUrl   : 'app/manage/templates/manageUserGroup.html',
-            controller    : 'manageUserGroupController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            // New for Agora
+            .when('/cs108', {
+                bodyClassName: 'cs108',
+                templateUrl: 'app/home/templates/cs108.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Client view
-        .when('/client/:id/:params?', {
-            bodyClassName : 'client',
-            templateUrl   : 'app/client/templates/client.html',
-            controller    : 'clientController',
-            resolve       : { updateCurrentToken: updateCurrentToken }
-        })
+            .when('/cs112', {
+                bodyClassName: 'cs112',
+                templateUrl: 'app/home/templates/cs112.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-        // Redirect to home screen if page not found
-        .otherwise({
-            resolve : { routeToUserHomePage: routeToUserHomePage }
-        });
+            .when('/cs212', {
+                bodyClassName: 'cs212',
+                templateUrl: 'app/home/templates/cs212.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
 
-}]);
+            .when('/cs232', {
+                bodyClassName: 'cs232',
+                templateUrl: 'app/home/templates/cs232.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
+
+            .when('/independent', {
+                bodyClassName: 'independent',
+                templateUrl: 'app/home/templates/independent.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
+
+            .when('/favorites', {
+                bodyClassName: 'favorites',
+                templateUrl: 'app/home/templates/favorites.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
+
+            .when('/about', {
+                bodyClassName: 'about',
+                templateUrl: 'app/home/templates/about.html',
+                controller: 'homeController',
+                resolve: { updateCurrentToken: updateCurrentToken }
+            })
+            // end Agora additions.  Should the other routes be removed?
+
+            // Redirect to home screen if page not found
+            .otherwise({
+                resolve: { routeToUserHomePage: routeToUserHomePage }
+            });
+
+    }]);
