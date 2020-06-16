@@ -1,37 +1,95 @@
+<html>
 
-<div class="view" ng-class="{loading: !isLoaded()}">
+<head>
+    <title>Agora - Home</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
 
-    <div class="connection-list-ui">
-
-        <!-- The recent connections for this user -->
-        <div class="header">
-            <h2>{{'HOME.SECTION_HEADER_RECENT_CONNECTIONS' | translate}}</h2>
-            <guac-user-menu></guac-user-menu>
-        </div>
-        <div class="recent-connections">
-            <guac-recent-connections root-groups="rootConnectionGroups"></guac-recent-connections>
-        </div>
-
-        <!-- All connections for this user -->
-        <div class="header">
-            <h2>{{'HOME.SECTION_HEADER_ALL_CONNECTIONS' | translate}}</h2>
-            <guac-group-list-filter connection-groups="rootConnectionGroups"
-                filtered-connection-groups="filteredRootConnectionGroups"
-                placeholder="'HOME.FIELD_PLACEHOLDER_FILTER' | translate"
-                connection-properties="filteredConnectionProperties"
-                connection-group-properties="filteredConnectionGroupProperties"></guac-group-list-filter>
-        </div>
-        <div class="all-connections">
-            <guac-group-list
-                context="context"
-                connection-groups="filteredRootConnectionGroups"
-                templates="{
-                    'connection'       : 'app/home/templates/connection.html',
-                    'connection-group' : 'app/home/templates/connectionGroup.html'
-                }"
-                page-size="20"></guac-group-list>
+<body>
+    <div id="content">
+        <div id="header">
+            <a href="http://www.calvin.edu"><img src="http://www.calvin.edu/global/images/calvin-college-inverse.svg"
+                    alt="Calvin University" width="170" height="47"></a>
+            <h1>Agora: Calvin Computer Science Project Showcase</h1>
+            <a href="#/about" style="float:right; margin-right: 5px;">About</a>
         </div>
 
+        <p align="center"> Welcome to the Calvin Computer Science Project Showcase.
+            <br />This site shows some of the projects Computer Science students and faculty have been creating over the
+            years. Enjoy!
+        </p>
+        <div id="mainbody">
+            <div id="projects">
+                <div id="19facs108" class="project-section">
+                    <div>
+                        <a href="#/19facs108">CS 108 Introduction to Programming in Python, Fall 2019</a>
+                    </div>
+                </div>
+                <div id="18spcs108" class="project-section">
+                    <div>
+                        <a href="#/18spcs108">CS 108 Introduction to Programming in Python, Spring 2018</a>
+                    </div>
+                </div>
+                <div id="18spcs108hw6" class="project-section">
+                    <div>
+                        <a href="#/18spcs108hw6">CS 108 Homework6, Greeting Cards, Spring 2018</a>
+                    </div>
+                </div>
+                <div id="17facs108" class="project-section">
+                    <div>
+                        <a href="#/17facs108">CS 108 Introduction to Programming in Python, Fall 2017</a>
+                    </div>
+                </div>
+                <div id="17spcs108" class="project-section">
+                    <div>
+                        <a href="#/17spcs108">CS 108 Introduction to Programming in Python, Spring 2017</a>
+                    </div>
+                </div>
+                <div id="pre2017cs108" class="project-section">
+                    <div>
+                        <a href="#/pre2017cs108">Older CS108 Final Projects, in Python</a>
+                    </div>
+                </div>
+                <div id="norman" class="project-section">
+                    <div>
+                        <a href="#/norman">Projects by Prof. Victor Norman</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style='text-align:center'>
+            <h3>Agora is hosted and maintained by the <a href="http://cs.calvin.edu">Calvin University CS
+                    Department</a>.
+            </h3>
+            The software that runs this site is open-source and available on <a
+                href="https://github.com/Calvin-CS/Agora">github.com</a>.<br />
+            Contact <a href="http://www.calvin.edu/~vtn2">Victor Norman</a> (vtn2 at calvin dot edu) for help in
+            installation and configuration.<br />
+            Copyright (c) 2020 Calvin University.
+        </div>
     </div>
+    <script>
+        /**
+         * Kill all previous programs that were run by this user
+         */
+        function killPrevious() {
+            var pid = sessionStorage.getItem("previousPid");
+            if (pid) {
+                $.get('KillServlet', { pid: pid }, function (responseText) {
+                    var newVar = responseText;
+                    sessionStorage.setItem("previousPid", null);
+                });
+            }
+        }
 
-</div>
+        /**
+         * Kill all of my processes when tab is closed using the pids that were stored earlier.
+         */
+        $(window).on('beforeunload', function () {
+            killPrevious();
+            console.log("Unload");
+        });
+    </script>
+</body>
+
+</html>

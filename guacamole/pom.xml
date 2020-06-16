@@ -17,16 +17,14 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                         http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.guacamole</groupId>
-    <artifactId>guacamole</artifactId>
+    <artifactId>agora</artifactId>
     <packaging>war</packaging>
-    <version>1.1.0</version>
+    <version>1</version>
     <name>guacamole</name>
     <url>http://guacamole.apache.org/</url>
 
@@ -107,7 +105,7 @@
                             <type>zip</type>
                         </overlay>
                     </overlays>
-            
+
                 </configuration>
                 <executions>
                     <execution>
@@ -161,7 +159,7 @@
                             <cssSourceFiles>
                                 <cssSourceFile>license.txt</cssSourceFile>
                             </cssSourceFiles>
-                            
+
                             <cssSourceIncludes>
                                 <cssSourceInclude>app/**/*.css</cssSourceInclude>
                             </cssSourceIncludes>
@@ -169,7 +167,7 @@
                             <jsSourceDir>/</jsSourceDir>
                             <jsTargetDir>/</jsTargetDir>
                             <jsFinalFile>guacamole.js</jsFinalFile>
-                            
+
                             <jsSourceFiles>
                                 <jsSourceFile>license.txt</jsSourceFile>
                                 <jsSourceFile>guacamole-common-js/all.js</jsSourceFile>
@@ -259,7 +257,7 @@
             <artifactId>logback-classic</artifactId>
             <version>1.1.2</version>
         </dependency>
-        
+
         <!-- Guacamole Java API -->
         <dependency>
             <groupId>org.apache.guacamole</groupId>
@@ -449,14 +447,14 @@
             <artifactId>guice-assistedinject</artifactId>
             <version>3.0</version>
         </dependency>
-        
+
         <!-- Guice Servlet -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
             <version>3.0</version>
         </dependency>
-        
+
         <!-- Jersey - JAX-RS Implementation -->
         <dependency>
             <groupId>com.sun.jersey</groupId>
@@ -469,15 +467,15 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-guice</artifactId>
             <version>1.17.1</version>
-        </dependency> 
-        
+        </dependency>
+
         <!-- JSR-250 annotations -->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>jsr250-api</artifactId>
             <version>1.0</version>
         </dependency>
-        
+
         <!-- Jackson for JSON support -->
         <dependency>
             <groupId>com.sun.jersey</groupId>
@@ -493,7 +491,7 @@
             </exclusions>
 
         </dependency>
-        
+
         <!-- JSTZ for TimeZone Detection -->
         <dependency>
             <groupId>org.webjars.npm</groupId>

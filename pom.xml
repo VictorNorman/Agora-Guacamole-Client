@@ -22,7 +22,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.guacamole</groupId>
-    <artifactId>guacamole-client-agora</artifactId>
+    <artifactId>guacamole</artifactId>
     <packaging>pom</packaging>
     <version>1.1.0</version>
     <name>guacamole-client</name>
